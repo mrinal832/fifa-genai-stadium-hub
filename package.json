@@ -1,0 +1,64 @@
+{
+  "name": "fifa-genai-stadium-hub",
+  "version": "1.0.0",
+  "description": "GenAI-powered FIFA World Cup 2026 Stadium Operations & Fan Experience Hub",
+  "main": "js/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "npx http-server . -p 3000 --cors -o",
+    "dev": "npx http-server . -p 3000 --cors -o",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:unit": "node --experimental-vm-modules node_modules/.bin/jest tests/unit",
+    "test:e2e": "playwright test",
+    "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
+    "lint": "eslint js/**/*.js --ext .js",
+    "lint:fix": "eslint js/**/*.js --ext .js --fix",
+    "audit": "npm audit --audit-level=moderate",
+    "build": "echo 'Static site - no build required'",
+    "predeploy": "echo 'Deploying to GitHub Pages'",
+    "deploy": "gh-pages -d ."
+  },
+  "keywords": [
+    "fifa",
+    "world-cup-2026",
+    "genai",
+    "stadium",
+    "accessibility",
+    "crowd-management",
+    "gemini-ai"
+  ],
+  "author": "mrinal832",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "eslint": "^8.57.0",
+    "gh-pages": "^6.1.1",
+    "http-server": "^14.1.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "transform": {},
+    "extensionsToTreatAsEsm": [".js"],
+    "testMatch": [
+      "**/tests/unit/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "js/**/*.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 75,
+        "lines": 75,
+        "statements": 75
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrinal832/fifa-genai-stadium-hub.git"
+  },
+  "homepage": "https://mrinal832.github.io/fifa-genai-stadium-hub"
+}
