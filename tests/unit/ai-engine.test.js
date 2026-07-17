@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
- * Unit tests for ai-engine.js
  */
+// Unit tests for ai-engine.js
 
 // Mock fetch globally
 global.fetch = jest.fn();

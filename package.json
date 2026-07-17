@@ -3,15 +3,13 @@
   "version": "1.0.0",
   "description": "GenAI-powered FIFA World Cup 2026 Stadium Operations & Fan Experience Hub",
   "main": "js/app.js",
-  "type": "module",
   "scripts": {
-    "start": "npx http-server . -p 3000 --cors -o",
-    "dev": "npx http-server . -p 3000 --cors -o",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
-    "test:unit": "node --experimental-vm-modules node_modules/.bin/jest tests/unit",
+    "start": "npx serve .",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
+    "test:unit": "jest tests/unit",
     "test:e2e": "playwright test",
-    "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
-    "lint": "eslint js/**/*.js --ext .js",
+    "lint": "eslint js/**/*.js",
+    "format": "prettier --write \"**/*.{js,css,html,md}\"",
     "lint:fix": "eslint js/**/*.js --ext .js --fix",
     "audit": "npm audit --audit-level=moderate",
     "build": "echo 'Static site - no build required'",
@@ -40,7 +38,6 @@
   "jest": {
     "testEnvironment": "jsdom",
     "transform": {},
-    "extensionsToTreatAsEsm": [".js"],
     "testMatch": [
       "**/tests/unit/**/*.test.js"
     ],

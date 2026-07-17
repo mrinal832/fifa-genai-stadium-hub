@@ -204,3 +204,15 @@ window.adjustFontSize = adjustFontSize;
 window.resetFontSize = resetFontSize;
 window.accessQuery = accessQuery;
 window.findAccessibleRoute = findAccessibleRoute;
+
+// Export for tests
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    toggleHighContrast,
+    toggleLargeText,
+    toggleAudioDesc,
+    toggleReduceMotion,
+    adjustFontSize,
+    resetFontSize
+  };
+}

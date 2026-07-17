@@ -228,3 +228,13 @@ function initCrowd() {
 window.dispatchAlert = dispatchAlert;
 window.aiRebalance = aiRebalance;
 window.simulateCrowdChange = simulateCrowdChange;
+
+// Export for tests
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    renderZoneGrid,
+    renderAlertsFeed,
+    updateCapacityGauge,
+    simulateCrowdChange
+  };
+}

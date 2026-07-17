@@ -140,3 +140,10 @@ function initSustainability() {
 // Expose globals
 window.updateCarbon = updateCarbon;
 window.getEcoTips = getEcoTips;
+
+// Export for tests
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    updateCarbon
+  };
+}

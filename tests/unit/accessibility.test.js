@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
- * Unit tests for accessibility module
  */
+// Unit tests for accessibility module
 
 global.sanitizeHTML = (s) => String(s || '');
 global.sanitizeInput = (s) => String(s || '').trim();

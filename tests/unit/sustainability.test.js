@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
- * Unit tests for sustainability module
  */
+// Unit tests for sustainability module
 
 global.sanitizeHTML = (s) => String(s || '');
 global.getEl = (id) => document.getElementById(id);
@@ -25,6 +25,8 @@ describe('updateCarbon', () => {
   beforeEach(() => {
     document.getElementById('carbon-transport').value = 'metro';
     document.getElementById('carbon-distance').value = '50';
+    document.getElementById('carbon-kg').textContent = '0';
+    document.getElementById('carbon-trees').textContent = '0';
   });
 
   test('calculates metro footprint correctly', () => {

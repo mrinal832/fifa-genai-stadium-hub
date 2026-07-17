@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
- * Unit tests for crowd management module
  */
+// Unit tests for crowd management module
 
 // Provide globals used by crowd.js
 global.sanitizeHTML = (s) => String(s || '');

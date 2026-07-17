@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
- * Unit tests for utils.js
  */
+// Unit tests for utils.js
 
 const {
   sanitizeHTML,
