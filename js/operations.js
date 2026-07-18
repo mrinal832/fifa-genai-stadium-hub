@@ -1,47 +1,127 @@
 /**
- * @fileoverview Operations Intelligence Module
+ * @fileoverview Operations Intelligence Module — Task & Incident Management
  * @module operations
+ * @description Provides AI-powered operational task assignment, incident triage,
+ *              and predictive maintenance management for FIFA World Cup 2026
+ *              stadium operations staff and volunteers.
  */
 
 'use strict';
 
-/** Sample operational tasks */
-const INITIAL_TASKS = [
-  { id: 't1', title: 'Manage crowd flow at Gate D', assignee: 'Team Alpha', priority: 'urgent', status: 'urgent', location: 'Gate D' },
-  { id: 't2', title: 'Restock first aid supplies — Medical Station 2', assignee: 'Team Delta', priority: 'high', status: 'pending', location: 'Section 312' },
-  { id: 't3', title: 'Check HVAC Unit 7 — Level 3 North', assignee: 'Facilities', priority: 'high', status: 'pending', location: 'Level 3 North' },
-  { id: 't4', title: 'Deploy extra stewards — North Concourse', assignee: 'Team Bravo', priority: 'urgent', status: 'urgent', location: 'North Concourse' },
-  { id: 't5', title: 'Refill beer concession at Section 115', assignee: 'Catering', priority: 'normal', status: 'pending', location: 'Section 115' },
-  { id: 't6', title: 'VIP lounge setup complete', assignee: 'Team Echo', priority: 'normal', status: 'done', location: 'VIP Level' },
-  { id: 't7', title: 'PA system test completed', assignee: 'Tech Team', priority: 'normal', status: 'done', location: 'Control Room' },
-];
-
-/** Maintenance prediction data */
-const MAINTENANCE_ITEMS = [
-  { icon: '❄️', title: 'HVAC Unit 7 — Level 3 North', desc: '94% failure probability within 3 hours', urgency: 'urgent', urgencyLabel: '🔴 Urgent' },
-  { icon: '💡', title: 'Lighting Bank 4 — East Stand', desc: 'Intermittent flickering detected — schedule inspection', urgency: 'high', urgencyLabel: '🟡 Today' },
-  { icon: '🚿', title: 'Restroom C2 Sensor — Section 110', desc: 'Flow sensor offline — maintenance required', urgency: 'medium', urgencyLabel: '🟡 Soon' },
-  { icon: '🔒', title: 'Gate B Emergency Lock — West Door', desc: 'Battery at 12% — replace before next event', urgency: 'high', urgencyLabel: '🟡 Today' },
-  { icon: '📡', title: 'WiFi AP Node 34 — Section 225', desc: 'Degraded performance — 62% packet loss', urgency: 'medium', urgencyLabel: '🟢 Routine' },
-];
-
-let _taskFilter = 'all';
-let _tasks = [...INITIAL_TASKS];
+/* -------- Constants -------- */
 
 /**
- * Renders the operations task list.
- * @param {string} [filter='all'] - Filter key
+ * @const {string[]} HIGH_PRIORITY_INCIDENT_TYPES
+ * Incident types that receive urgent priority classification.
+ */
+const HIGH_PRIORITY_INCIDENT_TYPES = ['medical', 'fire'];
+
+/* -------- Type Definitions -------- */
+
+/**
+ * @typedef {Object} Task
+ * @property {string} id       - Unique task identifier
+ * @property {string} title    - Task description
+ * @property {string} assignee - Assigned team or individual
+ * @property {'urgent'|'high'|'normal'} priority - Priority level
+ * @property {'urgent'|'pending'|'done'} status   - Current status
+ * @property {string} location - Physical location within the venue
+ */
+
+/**
+ * @typedef {Object} MaintenanceItem
+ * @property {string} icon         - Emoji icon for the component
+ * @property {string} title        - Component name and location
+ * @property {string} desc         - Maintenance description and risk
+ * @property {string} urgency      - Urgency key: 'urgent'|'high'|'medium'
+ * @property {string} urgencyLabel - Human-readable urgency label
+ */
+
+/* -------- Data -------- */
+
+/** @type {Task[]} Initial operational task list */
+const INITIAL_TASKS = [
+  { id: 't1', title: 'Manage crowd flow at Gate D',              assignee: 'Team Alpha', priority: 'urgent', status: 'urgent',  location: 'Gate D'         },
+  { id: 't2', title: 'Restock first aid — Medical Station 2',   assignee: 'Team Delta', priority: 'high',   status: 'pending', location: 'Section 312'    },
+  { id: 't3', title: 'Inspect HVAC Unit 7 — Level 3 North',     assignee: 'Facilities', priority: 'high',   status: 'pending', location: 'Level 3 North'  },
+  { id: 't4', title: 'Deploy extra stewards — North Concourse', assignee: 'Team Bravo', priority: 'urgent', status: 'urgent',  location: 'North Concourse'},
+  { id: 't5', title: 'Refill concessions — Section 115',        assignee: 'Catering',   priority: 'normal', status: 'pending', location: 'Section 115'    },
+  { id: 't6', title: 'VIP lounge setup complete',               assignee: 'Team Echo',  priority: 'normal', status: 'done',    location: 'VIP Level'      },
+  { id: 't7', title: 'PA system test completed',                assignee: 'Tech Team',  priority: 'normal', status: 'done',    location: 'Control Room'   },
+];
+
+/** @type {MaintenanceItem[]} Predictive maintenance items */
+const MAINTENANCE_ITEMS = [
+  { icon: '❄️', title: 'HVAC Unit 7 — Level 3 North',        desc: '94% failure probability within 3 hours',           urgency: 'urgent', urgencyLabel: '🔴 Urgent'  },
+  { icon: '💡', title: 'Lighting Bank 4 — East Stand',        desc: 'Intermittent flickering — schedule inspection',    urgency: 'high',   urgencyLabel: '🟡 Today'   },
+  { icon: '🚿', title: 'Restroom Sensor C2 — Section 110',   desc: 'Flow sensor offline — maintenance required',       urgency: 'medium', urgencyLabel: '🟡 Soon'    },
+  { icon: '🔒', title: 'Emergency Lock — Gate B West Door',   desc: 'Battery at 12% — replace before next event',      urgency: 'high',   urgencyLabel: '🟡 Today'   },
+  { icon: '📡', title: 'WiFi AP Node 34 — Section 225',       desc: 'Degraded performance — 62% packet loss detected',  urgency: 'medium', urgencyLabel: '🟢 Routine' },
+];
+
+/* -------- Module State -------- */
+
+/** @type {string} Active filter key for the task list */
+let _taskFilter = 'all';
+
+/** @type {Task[]} Mutable working copy of the task list */
+let _tasks = [...INITIAL_TASKS];
+
+/* -------- Private Helpers -------- */
+
+/**
+ * Returns the priority label for a task's current status.
+ * @param {'urgent'|'pending'|'done'} status - Task status
+ * @returns {string} Emoji status indicator
+ */
+function _statusIcon(status) {
+  if (status === 'done')   return '✅';
+  if (status === 'urgent') return '🔴';
+  return '🟡';
+}
+
+/**
+ * Determines whether a task matches the active filter.
+ * @param {Task}   task   - Task to test
+ * @param {string} filter - Active filter key
+ * @returns {boolean} True if the task should be shown
+ */
+function _taskMatchesFilter(task, filter) {
+  if (filter === 'all') return true;
+  return task.status === filter || task.priority === filter;
+}
+
+/**
+ * Returns the CSS colour for an incident priority heading.
+ * @param {string} incidentType - Incident type string
+ * @returns {string} CSS colour value
+ */
+function _incidentColour(incidentType) {
+  if (HIGH_PRIORITY_INCIDENT_TYPES.includes(incidentType)) return '#ff1744';
+  if (incidentType === 'security') return '#ff6d00';
+  return '#ffd600';
+}
+
+/* -------- Public API -------- */
+
+/**
+ * Renders the filtered operations task list.
+ * @param {string} [filter='all'] - Filter key: 'all'|'urgent'|'pending'|'done'
  */
 function renderTaskList(filter = 'all') {
   _taskFilter = filter;
   const list = getEl('task-list');
   if (!list) return;
 
-  const filtered = filter === 'all' ? _tasks : _tasks.filter(t => t.status === filter || t.priority === filter);
+  const filtered = _tasks.filter(t => _taskMatchesFilter(t, filter));
 
   list.innerHTML = '';
+
   if (filtered.length === 0) {
-    list.innerHTML = '<p style="color:var(--text-muted);font-size:0.875rem;padding:1rem 0">No tasks in this category.</p>';
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'empty-task-msg';
+    emptyMsg.textContent = 'No tasks in this category.';
+    list.appendChild(emptyMsg);
     return;
   }
 
@@ -50,22 +130,41 @@ function renderTaskList(filter = 'all') {
     div.className = 'task-item';
     div.id = `task-${task.id}`;
     div.setAttribute('role', 'listitem');
-    div.innerHTML = `
-      <div class="task-priority priority-${task.priority}" aria-hidden="true"></div>
-      <div class="task-info">
-        <div class="task-title">${sanitizeHTML(task.title)}</div>
-        <div class="task-meta">${sanitizeHTML(task.assignee)} — ${sanitizeHTML(task.location)}</div>
-      </div>
-      <button class="task-status status-${task.status}" onclick="toggleTaskStatus('${task.id}')" aria-label="Mark task ${sanitizeHTML(task.title)} as ${task.status === 'done' ? 'pending' : 'done'}">
-        ${task.status === 'done' ? '✅' : task.status === 'urgent' ? '🔴' : '🟡'}
-      </button>`;
+
+    const priorityBar = document.createElement('div');
+    priorityBar.className = `task-priority priority-${task.priority}`;
+    priorityBar.setAttribute('aria-hidden', 'true');
+
+    const info = document.createElement('div');
+    info.className = 'task-info';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'task-title';
+    titleEl.textContent = task.title;
+
+    const metaEl = document.createElement('div');
+    metaEl.className = 'task-meta';
+    metaEl.textContent = `${task.assignee} — ${task.location}`;
+
+    info.appendChild(titleEl);
+    info.appendChild(metaEl);
+
+    const btn = document.createElement('button');
+    btn.className = `task-status status-${task.status}`;
+    btn.setAttribute('aria-label', `Mark "${task.title}" as ${task.status === 'done' ? 'pending' : 'done'}`);
+    btn.textContent = _statusIcon(task.status);
+    btn.addEventListener('click', () => toggleTaskStatus(task.id));
+
+    div.appendChild(priorityBar);
+    div.appendChild(info);
+    div.appendChild(btn);
     list.appendChild(div);
   });
 }
 
 /**
- * Toggles a task between done and pending status.
- * @param {string} taskId
+ * Toggles a task between 'done' and 'pending' status.
+ * @param {string} taskId - The ID of the task to toggle
  */
 function toggleTaskStatus(taskId) {
   const task = _tasks.find(t => t.id === taskId);
@@ -76,28 +175,30 @@ function toggleTaskStatus(taskId) {
 }
 
 /**
- * Filters task list.
- * @param {string} filter
+ * Filters the task list and updates ARIA pressed states on filter buttons.
+ * @param {string} filter - Filter key: 'all'|'urgent'|'pending'|'done'|'normal'
  */
 function filterTasks(filter) {
   _taskFilter = filter;
   renderTaskList(filter);
 
-  // Update ARIA pressed state on filter buttons
   qsa('.filter-btn').forEach(btn => {
-    btn.setAttribute('aria-pressed', btn.textContent.toLowerCase().includes(filter) || (filter === 'all' && btn.textContent.toLowerCase() === 'all') ? 'true' : 'false');
-    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(filter) || (filter === 'all' && btn.textContent.toLowerCase() === 'all'));
+    const matches = btn.dataset.filter === filter;
+    btn.setAttribute('aria-pressed', String(matches));
+    btn.classList.toggle('active', matches);
   });
 }
 
 /**
- * Uses AI to assign the next highest-priority task.
+ * Uses AI to recommend the optimal task assignment order for pending tasks.
+ * @returns {Promise<void>}
  */
 async function aiAssignTask() {
   const btn = getEl('ai-assign-btn');
   if (btn) btn.disabled = true;
 
   const pendingTasks = _tasks.filter(t => t.status !== 'done');
+
   if (pendingTasks.length === 0) {
     showToast('✅ All tasks are completed!', 'success');
     if (btn) btn.disabled = false;
@@ -107,13 +208,16 @@ async function aiAssignTask() {
   showLoading('AI optimizing task assignments...');
 
   try {
-    const taskSummary = pendingTasks.map(t => `${t.priority}: ${t.title} at ${t.location}`).join(', ');
-    const prompt = `Given these pending stadium operations tasks: ${taskSummary}. Recommend the optimal assignment order and which task should be addressed immediately, with reasoning.`;
+    const taskSummary = pendingTasks
+      .map(t => `${t.priority}: ${t.title} at ${t.location}`)
+      .join('; ');
+
+    const prompt = `Stadium operations at FIFA WC 2026. Pending tasks: ${taskSummary}. Recommend the optimal assignment order and immediate priority action with reasoning.`;
     const response = await generateAIResponse(prompt, 'operations');
 
-    showToast(`🤖 AI Assignment: ${response.substring(0, 80)}...`, 'info', 5000);
+    showToast(`🤖 AI: ${response.substring(0, 80)}…`, 'info', 5000);
     announceToScreenReader('AI task assignment recommendation ready.');
-  } catch (_) {
+  } catch (_err) {
     showToast('⚠️ AI assignment temporarily unavailable', 'warning');
   } finally {
     hideLoading();
@@ -122,17 +226,19 @@ async function aiAssignTask() {
 }
 
 /**
- * Handles incident form submission with AI triage.
+ * Handles incident form submission with AI triage analysis.
+ * On success, adds a new task to the task list automatically.
  * @param {Event} e - Form submit event
+ * @returns {Promise<void>}
  */
 async function submitIncident(e) {
   e.preventDefault();
 
-  const type = sanitizeInput(getEl('incident-type')?.value || '');
+  const type     = sanitizeInput(getEl('incident-type')?.value     || '');
   const location = sanitizeInput(getEl('incident-location')?.value || '');
-  const desc = sanitizeInput(getEl('incident-desc')?.value || '', 1000);
+  const desc     = sanitizeInput(getEl('incident-desc')?.value     || '', 1000);
   const resultEl = getEl('incident-result');
-  const btn = getEl('report-incident-btn');
+  const btn      = getEl('report-incident-btn');
 
   if (!type || !location) {
     showToast('⚠️ Please fill in incident type and location', 'warning');
@@ -144,35 +250,69 @@ async function submitIncident(e) {
   showLoading('AI triaging incident...');
 
   try {
-    const prompt = `Incident report at FIFA WC 2026 stadium: Type: ${type}, Location: ${location}, Description: ${desc || 'Not provided'}. Provide: 1) Priority level, 2) Immediate actions (3 bullet points), 3) Teams to notify, 4) Estimated resolution time.`;
-    const response = await generateAIResponse(prompt, 'operations');
+    const prompt = [
+      `Incident at FIFA WC 2026 stadium:`,
+      `Type: ${type},`,
+      `Location: ${location},`,
+      `Description: ${desc || 'Not provided'}.`,
+      `Provide: 1) Priority level, 2) Immediate actions (3 bullets), 3) Teams to notify, 4) Estimated resolution time.`,
+    ].join(' ');
 
-    const priorityColor = type === 'medical' || type === 'fire' ? '#ff1744' : type === 'security' ? '#ff6d00' : '#ffd600';
+    const response      = await generateAIResponse(prompt, 'operations');
+    const incidentId    = Date.now().toString().slice(-6);
+    const priorityColor = _incidentColour(type);
+
     if (resultEl) {
-      resultEl.innerHTML = `
-        <div class="result-heading" style="color:${priorityColor}">🚨 AI Triage Complete — Incident #${Date.now().toString().slice(-6)}</div>
-        <div style="margin-bottom:0.5rem"><span class="tag tag-danger">📍 ${sanitizeHTML(location)}</span> <span class="tag tag-warning">🔖 ${sanitizeHTML(type)}</span></div>
-        <div>${response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>`;
+      const heading = document.createElement('div');
+      heading.className = 'result-heading';
+      heading.style.color = priorityColor;
+      heading.textContent = `🚨 AI Triage Complete — Incident #${incidentId}`;
+
+      const tags = document.createElement('div');
+      tags.style.marginBottom = '0.5rem';
+
+      const locTag = document.createElement('span');
+      locTag.className = 'tag tag-danger';
+      locTag.textContent = `📍 ${location}`;
+
+      const typeTag = document.createElement('span');
+      typeTag.className = 'tag tag-warning';
+      typeTag.textContent = `🔖 ${type}`;
+
+      tags.appendChild(locTag);
+      tags.appendChild(document.createTextNode(' '));
+      tags.appendChild(typeTag);
+
+      const responseEl = document.createElement('div');
+      responseEl.innerHTML = response
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+
+      resultEl.innerHTML = '';
+      resultEl.appendChild(heading);
+      resultEl.appendChild(tags);
+      resultEl.appendChild(responseEl);
       resultEl.className = 'incident-result visible';
     }
 
-    announceToScreenReader(`Incident reported at ${location}. AI triage complete.`, 'assertive');
+    announceToScreenReader(`Incident at ${location} reported. AI triage complete.`, 'assertive');
     showToast('🚨 Incident reported and triaged by AI', 'warning', 5000);
 
-    // Add to task list
+    /** @type {Task} */
     const newTask = {
-      id: `inc-${Date.now()}`,
-      title: `Incident: ${type} at ${location}`,
+      id:       `inc-${Date.now()}`,
+      title:    `Incident: ${type} at ${location}`,
       assignee: 'Auto-assigned',
-      priority: type === 'medical' || type === 'fire' ? 'urgent' : 'high',
-      status: type === 'medical' || type === 'fire' ? 'urgent' : 'pending',
+      priority: HIGH_PRIORITY_INCIDENT_TYPES.includes(type) ? 'urgent' : 'high',
+      status:   HIGH_PRIORITY_INCIDENT_TYPES.includes(type) ? 'urgent' : 'pending',
       location,
     };
+
     _tasks.unshift(newTask);
     renderTaskList(_taskFilter);
-  } catch (_) {
+  } catch (_err) {
     if (resultEl) {
-      resultEl.innerHTML = '<p>⚠️ Incident logged. Manual triage required — contact operations center immediately.</p>';
+      resultEl.textContent = '⚠️ Incident logged. Manual triage required — contact operations center.';
       resultEl.className = 'incident-result visible';
     }
   } finally {
@@ -182,30 +322,52 @@ async function submitIncident(e) {
 }
 
 /**
- * Renders the predictive maintenance list.
+ * Renders the predictive maintenance items list.
  */
 function renderMaintenanceList() {
   const list = getEl('maintenance-list');
   if (!list) return;
 
   list.innerHTML = '';
+
   MAINTENANCE_ITEMS.forEach(item => {
     const el = document.createElement('div');
     el.className = 'maint-item';
     el.setAttribute('role', 'listitem');
-    el.innerHTML = `
-      <span class="maint-icon" aria-hidden="true">${item.icon}</span>
-      <div class="maint-info">
-        <div class="maint-title">${sanitizeHTML(item.title)}</div>
-        <div class="maint-desc">${sanitizeHTML(item.desc)}</div>
-      </div>
-      <span class="maint-urgency" style="background:rgba(255,23,68,${item.urgency==='urgent'?'0.15':'0.05'});color:var(--color-${item.urgency==='urgent'?'danger':item.urgency==='high'?'warning':'success'})">${item.urgencyLabel}</span>`;
+
+    const icon = document.createElement('span');
+    icon.className = 'maint-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = item.icon;
+
+    const info = document.createElement('div');
+    info.className = 'maint-info';
+
+    const title = document.createElement('div');
+    title.className = 'maint-title';
+    title.textContent = item.title;
+
+    const desc = document.createElement('div');
+    desc.className = 'maint-desc';
+    desc.textContent = item.desc;
+
+    info.appendChild(title);
+    info.appendChild(desc);
+
+    const urgencyEl = document.createElement('span');
+    urgencyEl.className = `maint-urgency urgency-${item.urgency}`;
+    urgencyEl.textContent = item.urgencyLabel;
+
+    el.appendChild(icon);
+    el.appendChild(info);
+    el.appendChild(urgencyEl);
     list.appendChild(el);
   });
 }
 
 /**
- * Refreshes maintenance predictions with AI.
+ * Refreshes maintenance predictions using AI analysis.
+ * @returns {Promise<void>}
  */
 async function refreshMaintenance() {
   const btn = getEl('refresh-maint-btn');
@@ -214,11 +376,17 @@ async function refreshMaintenance() {
   showLoading('AI analyzing maintenance data...');
 
   try {
-    const response = await generateAIResponse('Provide 2 new predictive maintenance alerts for a large stadium (80,000 capacity) based on sensor data analysis. Include component, risk level, and recommended action.', 'operations');
+    const prompt = [
+      'Provide 2 predictive maintenance alerts for a large FIFA WC 2026 stadium',
+      '(82,500 capacity) based on sensor data. For each: component name, risk level,',
+      'and recommended action.',
+    ].join(' ');
+
+    await generateAIResponse(prompt, 'operations');
     showToast('🔧 Maintenance predictions refreshed', 'info');
     announceToScreenReader('Maintenance predictions updated.');
     renderMaintenanceList();
-  } catch (_) {
+  } catch (_err) {
     showToast('⚠️ Could not refresh maintenance data', 'warning');
   } finally {
     hideLoading();
@@ -227,16 +395,16 @@ async function refreshMaintenance() {
 }
 
 /**
- * Initializes the operations module.
+ * Initializes the operations intelligence module.
  */
 function initOperations() {
   renderTaskList();
   renderMaintenanceList();
 }
 
-// Expose globals
-window.filterTasks = filterTasks;
-window.toggleTaskStatus = toggleTaskStatus;
-window.aiAssignTask = aiAssignTask;
-window.submitIncident = submitIncident;
+/* -------- Global Exports -------- */
+window.filterTasks       = filterTasks;
+window.toggleTaskStatus  = toggleTaskStatus;
+window.aiAssignTask      = aiAssignTask;
+window.submitIncident    = submitIncident;
 window.refreshMaintenance = refreshMaintenance;

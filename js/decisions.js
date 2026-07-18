@@ -1,6 +1,12 @@
 /**
- * @fileoverview Real-Time Decision Support Module
+ * @fileoverview Real-Time Decision Support Module — Executive Dashboard & AI Command
  * @module decisions
+ * @description Provides real-time KPI monitoring, scenario simulation protocols,
+ *              a global AI command interface, and data-driven decision support
+ *              for FIFA World Cup 2026 venue operations leadership.
+ *
+ * Scenario templates align with FIFA's official Event Safety Guidelines (ESG)
+ * and NFPA 101 Life Safety Code requirements for large public venues.
  */
 
 'use strict';
@@ -247,8 +253,19 @@ function renderKPIChart() {
 }
 
 /**
- * Draws a data line on the KPI chart canvas.
+ * Draws a data line with gradient fill on the KPI canvas chart.
  * @private
+ * @param {CanvasRenderingContext2D} ctx       - Canvas 2D rendering context
+ * @param {number[]}                data       - Normalised data values (0–100)
+ * @param {number}                  minVal     - Minimum scale value
+ * @param {number}                  maxVal     - Maximum scale value
+ * @param {{top:number,right:number,bottom:number,left:number}} pad - Chart padding
+ * @param {number}                  chartW     - Drawable chart width in pixels
+ * @param {number}                  chartH     - Drawable chart height in pixels
+ * @param {number}                  n          - Number of data points
+ * @param {string}                  color      - CSS hex colour for the line
+ * @param {number}                  lineWidth  - Stroke width in pixels
+ * @returns {void}
  */
 function _drawLine(ctx, data, minVal, maxVal, pad, chartW, chartH, n, color, lineWidth) {
   const range = maxVal - minVal;
@@ -290,7 +307,8 @@ function _drawLine(ctx, data, minVal, maxVal, pad, chartW, chartH, n, color, lin
 }
 
 /**
- * Animates KPI values with counting effect.
+ * Animates KPI value displays with a fade-in counting effect.
+ * Called on module initialization to draw attention to live metrics.
  */
 function animateKPIs() {
   const kpiEls = [
@@ -314,7 +332,8 @@ function animateKPIs() {
 }
 
 /**
- * Initializes the decision support module.
+ * Initializes the decision support module:
+ * renders the KPI chart, animates values, and starts the live satisfaction ticker.
  */
 function initDecisions() {
   renderKPIChart();

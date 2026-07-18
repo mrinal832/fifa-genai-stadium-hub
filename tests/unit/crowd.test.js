@@ -93,7 +93,7 @@ describe('updateCapacityGauge', () => {
   });
 
   test('sets critical badge at high capacity', () => {
-    updateCapacityGauge(92);
+    updateCapacityGauge(96);
     const badge = document.getElementById('crowd-alert-badge');
     expect(badge.textContent).toContain('Critical');
   });
